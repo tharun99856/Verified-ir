@@ -1,6 +1,68 @@
 import json
 
-from ir.model import Claims, GroupBy, Hints, Pipeline, Reduce, ReducerKind, Sort, Take
+from ir.model import (
+    BinOp,
+    BinOpKind,
+    Claims,
+    CompareKind,
+    Condition,
+    Const,
+    Field,
+    Filter,
+    GroupBy,
+    Hints,
+    Pipeline,
+    Reduce,
+    ReducerKind,
+    Sort,
+    Take,
+)
+
+
+def _emit_expr(expr):
+    if isinstance(expr, Const):
+        return {"kind": "const", "value": expr.value}
+    if isinstance(expr, Field):
+        return {"kind": "field", "name": expr.name}
+    if isinstance(expr, BinOp):
+        return {
+            "kind": "binop",
+            "op": expr.op.value,
+            "left": _emit_expr(expr.left),
+            "right": _emit_expr(expr.right),
+        }
+    raise ValueError(f"unknown expr type: {type(expr)!r}")
+
+
+def _parse_expr(data):
+    kind = data["kind"]
+    if kind == "const":
+        return Const(value=data["value"])
+    if kind == "field":
+        return Field(name=data["name"])
+    if kind == "binop":
+        return BinOp(
+            op=BinOpKind(data["op"]),
+            left=_parse_expr(data["left"]),
+            right=_parse_expr(data["right"]),
+        )
+    raise ValueError(f"unknown expr kind: {kind!r}")
+
+
+def _emit_condition(condition):
+    return {
+        "field": condition.field,
+        "cmp": condition.cmp.value,
+        "value": _emit_expr(condition.value),
+    }
+
+
+def _parse_condition(data):
+    return Condition(
+        field=data["field"],
+        cmp=CompareKind(data["cmp"]),
+        value=_parse_expr(data["value"]),
+    )
 
 
 def _emit_op(op):
@@ -25,6 +87,13 @@ def _emit_op(op):
             "field": op.field,
             "init": op.init,
         }
+    if isinstance(op, Filter):
+        return {
+            "op": "filter",
+            "input": op.input,
+            "output": op.output,
+            "condition": _emit_condition(op.condition),
+        }
     raise ValueError(f"unknown op type: {type(op)!r}")
 
 
@@ -48,6 +117,12 @@ def _parse_op(data):
             reducer=ReducerKind(data["reducer"]),
             field=data.get("field"),
             init=data.get("init"),
+        )
+    if kind == "filter":
+        return Filter(
+            input=data["input"],
+            output=data["output"],
+            condition=_parse_condition(data["condition"]),
         )
     raise ValueError(f"unknown op kind: {kind!r}")
 

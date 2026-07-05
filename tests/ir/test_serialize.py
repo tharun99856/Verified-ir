@@ -1,4 +1,17 @@
-from ir.model import Claims, GroupBy, Hints, Pipeline, Reduce, ReducerKind, Sort, Take
+from ir.model import (
+    Claims,
+    CompareKind,
+    Condition,
+    Const,
+    Filter,
+    GroupBy,
+    Hints,
+    Pipeline,
+    Reduce,
+    ReducerKind,
+    Sort,
+    Take,
+)
 from ir.serialize import JsonSerializer
 
 
@@ -53,6 +66,22 @@ def test_round_trip_reduce_with_count_has_no_field():
         ir_version=1,
         contract_version=1,
         ops=[Reduce(input="items", output="n", reducer=ReducerKind.COUNT)],
+        claims=Claims(complexity="O(n)", stable=False),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
+
+
+def test_round_trip_pipeline_with_filter_over_const():
+    cond = Condition(field="age", cmp=CompareKind.GT, value=Const(value=18))
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Filter(input="users", output="adults", condition=cond)],
         claims=Claims(complexity="O(n)", stable=False),
         hints=Hints(),
     )
