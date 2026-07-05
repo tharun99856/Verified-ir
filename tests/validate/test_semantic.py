@@ -69,3 +69,27 @@ def test_input_referencing_a_later_output_is_rejected():
 
     assert result.outcome == "rejected"
     assert result.stage == "semantic"
+
+
+def test_unused_intermediate_output_is_rejected_as_dangling():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[
+            Filter(
+                input="users",
+                output="adults",
+                condition=Condition(field="age", cmp=CompareKind.GT, value=Const(value=18)),
+            ),
+            Sort(input="users", output="sorted", key="score"),
+            Take(input="sorted", output="top10", count=10),
+        ],
+        claims=Claims(complexity="O(n log n)", stable=False),
+        hints=Hints(),
+    )
+
+    result = validate_semantic(pipeline)
+
+    assert result.outcome == "rejected"
+    assert result.stage == "semantic"
+    assert result.evidence == ["adults"]

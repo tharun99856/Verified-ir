@@ -19,4 +19,16 @@ def validate_semantic(pipeline: Pipeline) -> Explanation:
                 ),
             )
 
+    consumed = {op.input for op in pipeline.ops}
+    last_output = pipeline.ops[-1].output if pipeline.ops else None
+    for op in pipeline.ops:
+        if op.output != last_output and op.output not in consumed:
+            return Explanation(
+                stage="semantic",
+                outcome="rejected",
+                rule="DANGLING_OUTPUT",
+                evidence=[op.output],
+                suggestion=f"'{op.output}' is never used by any later op and is not the final result",
+            )
+
     return Explanation(stage="semantic", outcome="ok", rule="SEMANTIC_OK")
