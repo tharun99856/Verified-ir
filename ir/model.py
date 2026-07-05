@@ -98,3 +98,14 @@ class Take:
     input: str
     output: str
     count: int
+
+
+Op = Union[Filter, Map, Sort, Reduce, GroupBy, Take]
+
+
+@dataclass(frozen=True)
+class Claims:
+    complexity: str
+    stable: bool
+    mutates: bool = False
+    aliasing: bool = False
