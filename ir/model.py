@@ -62,6 +62,14 @@ class Map:
 
 
 @dataclass(frozen=True)
+class Sort:
+    input: str
+    output: str
+    key: str
+    descending: bool = False
+
+
+@dataclass(frozen=True)
 class Take:
     input: str
     output: str
