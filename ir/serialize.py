@@ -11,6 +11,7 @@ from ir.model import (
     Filter,
     GroupBy,
     Hints,
+    Map,
     Pipeline,
     Reduce,
     ReducerKind,
@@ -94,6 +95,14 @@ def _emit_op(op):
             "output": op.output,
             "condition": _emit_condition(op.condition),
         }
+    if isinstance(op, Map):
+        return {
+            "op": "map",
+            "input": op.input,
+            "output": op.output,
+            "assign": op.assign,
+            "expr": _emit_expr(op.expr),
+        }
     raise ValueError(f"unknown op type: {type(op)!r}")
 
 
@@ -123,6 +132,13 @@ def _parse_op(data):
             input=data["input"],
             output=data["output"],
             condition=_parse_condition(data["condition"]),
+        )
+    if kind == "map":
+        return Map(
+            input=data["input"],
+            output=data["output"],
+            assign=data["assign"],
+            expr=_parse_expr(data["expr"]),
         )
     raise ValueError(f"unknown op kind: {kind!r}")
 

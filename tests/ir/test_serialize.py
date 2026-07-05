@@ -5,9 +5,11 @@ from ir.model import (
     CompareKind,
     Condition,
     Const,
+    Field,
     Filter,
     GroupBy,
     Hints,
+    Map,
     Pipeline,
     Reduce,
     ReducerKind,
@@ -110,6 +112,22 @@ def test_round_trip_pipeline_with_filter_over_nested_binop():
 
     assert result == pipeline
     assert isinstance(result.ops[0].condition.value, BinOp)
+
+
+def test_round_trip_pipeline_with_map():
+    expr = BinOp(op=BinOpKind.MUL, left=Field(name="price"), right=Const(value=2))
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Map(input="items", output="doubled", assign="price", expr=expr)],
+        claims=Claims(complexity="O(n)", stable=False),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
 
 
 def test_round_trip_pipeline_with_groupby():
