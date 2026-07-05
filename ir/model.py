@@ -7,6 +7,11 @@ class Field:
 
 
 @dataclass(frozen=True)
+class Const:
+    value: object
+
+
+@dataclass(frozen=True)
 class Take:
     input: str
     output: str
