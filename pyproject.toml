@@ -1,0 +1,12 @@
+# verified-intent-ir — tooling configuration.
+# The project is not yet a distributable package (no build-system on purpose);
+# this file configures the test runner and linter for the flat top-level layout.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
