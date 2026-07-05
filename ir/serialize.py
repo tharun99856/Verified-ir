@@ -1,6 +1,6 @@
 import json
 
-from ir.model import Claims, GroupBy, Hints, Pipeline, Sort, Take
+from ir.model import Claims, GroupBy, Hints, Pipeline, Reduce, ReducerKind, Sort, Take
 
 
 def _emit_op(op):
@@ -16,6 +16,15 @@ def _emit_op(op):
         }
     if isinstance(op, GroupBy):
         return {"op": "groupby", "input": op.input, "output": op.output, "key": op.key}
+    if isinstance(op, Reduce):
+        return {
+            "op": "reduce",
+            "input": op.input,
+            "output": op.output,
+            "reducer": op.reducer.value,
+            "field": op.field,
+            "init": op.init,
+        }
     raise ValueError(f"unknown op type: {type(op)!r}")
 
 
@@ -32,6 +41,14 @@ def _parse_op(data):
         )
     if kind == "groupby":
         return GroupBy(input=data["input"], output=data["output"], key=data["key"])
+    if kind == "reduce":
+        return Reduce(
+            input=data["input"],
+            output=data["output"],
+            reducer=ReducerKind(data["reducer"]),
+            field=data.get("field"),
+            init=data.get("init"),
+        )
     raise ValueError(f"unknown op kind: {kind!r}")
 
 

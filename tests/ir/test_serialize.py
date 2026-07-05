@@ -1,4 +1,4 @@
-from ir.model import Claims, GroupBy, Hints, Pipeline, Sort, Take
+from ir.model import Claims, GroupBy, Hints, Pipeline, Reduce, ReducerKind, Sort, Take
 from ir.serialize import JsonSerializer
 
 
@@ -24,6 +24,36 @@ def test_round_trip_pipeline_with_sort():
         contract_version=1,
         ops=[Sort(input="adults", output="sorted", key="score", descending=True)],
         claims=Claims(complexity="O(n log n)", stable=True),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
+
+
+def test_round_trip_pipeline_with_reduce():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Reduce(input="prices", output="total", reducer=ReducerKind.SUM, field="price")],
+        claims=Claims(complexity="O(n)", stable=False),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
+
+
+def test_round_trip_reduce_with_count_has_no_field():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Reduce(input="items", output="n", reducer=ReducerKind.COUNT)],
+        claims=Claims(complexity="O(n)", stable=False),
         hints=Hints(),
     )
 
