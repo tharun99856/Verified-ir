@@ -1,0 +1,3 @@
+# Runtime dependencies.
+# Kept deliberately minimal — everything else is Python 3.10+ standard library.
+jsonschema>=4.0
