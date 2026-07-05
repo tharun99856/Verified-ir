@@ -1,11 +1,19 @@
 import json
 
-from ir.model import Claims, Hints, Pipeline, Take
+from ir.model import Claims, Hints, Pipeline, Sort, Take
 
 
 def _emit_op(op):
     if isinstance(op, Take):
         return {"op": "take", "input": op.input, "output": op.output, "count": op.count}
+    if isinstance(op, Sort):
+        return {
+            "op": "sort",
+            "input": op.input,
+            "output": op.output,
+            "key": op.key,
+            "descending": op.descending,
+        }
     raise ValueError(f"unknown op type: {type(op)!r}")
 
 
@@ -13,6 +21,13 @@ def _parse_op(data):
     kind = data["op"]
     if kind == "take":
         return Take(input=data["input"], output=data["output"], count=data["count"])
+    if kind == "sort":
+        return Sort(
+            input=data["input"],
+            output=data["output"],
+            key=data["key"],
+            descending=data.get("descending", False),
+        )
     raise ValueError(f"unknown op kind: {kind!r}")
 
 

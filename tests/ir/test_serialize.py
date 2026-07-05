@@ -1,4 +1,4 @@
-from ir.model import Claims, Hints, Pipeline, Take
+from ir.model import Claims, Hints, Pipeline, Sort, Take
 from ir.serialize import JsonSerializer
 
 
@@ -14,5 +14,20 @@ def test_round_trip_pipeline_with_take_only():
     serializer = JsonSerializer()
     wire = serializer.emit(pipeline)
     result = serializer.parse(wire)
+
+    assert result == pipeline
+
+
+def test_round_trip_pipeline_with_sort():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Sort(input="adults", output="sorted", key="score", descending=True)],
+        claims=Claims(complexity="O(n log n)", stable=True),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
 
     assert result == pipeline
