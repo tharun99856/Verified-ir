@@ -27,3 +27,16 @@ def compose_complexity(ops) -> str:
     if not ops:
         return "O(1)"
     return max((op_complexity(op) for op in ops), key=lambda c: _RANK[c])
+
+
+def dominant_op_names(ops):
+    if not ops:
+        return []
+    max_rank = max(_RANK[op_complexity(op)] for op in ops)
+    names = []
+    for op in ops:
+        if _RANK[op_complexity(op)] == max_rank:
+            name = op_name(op)
+            if name not in names:
+                names.append(name)
+    return names
