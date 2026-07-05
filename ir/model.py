@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 
 class BinOpKind(Enum):
@@ -114,3 +114,12 @@ class Claims:
 @dataclass(frozen=True)
 class Hints:
     suggested_algorithm: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class Pipeline:
+    ir_version: int
+    contract_version: int
+    ops: List[Op]
+    claims: Claims
+    hints: Hints = field(default_factory=Hints)
