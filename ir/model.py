@@ -109,3 +109,8 @@ class Claims:
     stable: bool
     mutates: bool = False
     aliasing: bool = False
+
+
+@dataclass(frozen=True)
+class Hints:
+    suggested_algorithm: Optional[str] = None
