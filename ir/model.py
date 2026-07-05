@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 
 
 class BinOpKind(Enum):
@@ -59,6 +59,23 @@ class Map:
     output: str
     assign: str
     expr: Expr
+
+
+class ReducerKind(Enum):
+    SUM = "sum"
+    PRODUCT = "product"
+    MIN = "min"
+    MAX = "max"
+    COUNT = "count"
+
+
+@dataclass(frozen=True)
+class Reduce:
+    input: str
+    output: str
+    reducer: ReducerKind
+    field: Optional[str] = None
+    init: Optional[object] = None
 
 
 @dataclass(frozen=True)
