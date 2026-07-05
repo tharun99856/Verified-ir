@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-ir/schema/ir.schema.json",
+  "title": "verified-intent-ir Pipeline (structural grammar, stage 1)",
+  "$defs": {
+    "Expr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "const" },
+            "value": {}
+          },
+          "required": ["kind", "value"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "field" },
+            "name": { "type": "string" }
+          },
+          "required": ["kind", "name"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": { "const": "binop" },
+            "op": { "enum": ["add", "sub", "mul", "div"] },
+            "left": { "$ref": "#/$defs/Expr" },
+            "right": { "$ref": "#/$defs/Expr" }
+          },
+          "required": ["kind", "op", "left", "right"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Condition": {
+      "type": "object",
+      "properties": {
+        "field": { "type": "string" },
+        "cmp": { "enum": ["gt", "lt", "gte", "lte", "eq", "neq"] },
+        "value": { "$ref": "#/$defs/Expr" }
+      },
+      "required": ["field", "cmp", "value"],
+      "additionalProperties": false
+    },
+    "Op": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "filter" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "condition": { "$ref": "#/$defs/Condition" }
+          },
+          "required": ["op", "input", "output", "condition"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "map" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "assign": { "type": "string" },
+            "expr": { "$ref": "#/$defs/Expr" }
+          },
+          "required": ["op", "input", "output", "assign", "expr"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "sort" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "key": { "type": "string" },
+            "descending": { "type": "boolean" }
+          },
+          "required": ["op", "input", "output", "key"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "reduce" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "reducer": { "enum": ["sum", "product", "min", "max", "count"] },
+            "field": { "type": ["string", "null"] },
+            "init": {}
+          },
+          "required": ["op", "input", "output", "reducer"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "groupby" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "key": { "type": "string" }
+          },
+          "required": ["op", "input", "output", "key"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": { "const": "take" },
+            "input": { "type": "string" },
+            "output": { "type": "string" },
+            "count": { "type": "integer" }
+          },
+          "required": ["op", "input", "output", "count"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Claims": {
+      "type": "object",
+      "properties": {
+        "complexity": { "type": "string" },
+        "stable": { "type": "boolean" },
+        "mutates": { "type": "boolean" },
+        "aliasing": { "type": "boolean" }
+      },
+      "required": ["complexity", "stable"],
+      "additionalProperties": false
+    },
+    "Hints": {
+      "type": "object",
+      "properties": {
+        "suggested_algorithm": { "type": ["string", "null"] }
+      },
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "ir_version": { "type": "integer" },
+    "contract_version": { "type": "integer" },
+    "ops": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Op" }
+    },
+    "claims": { "$ref": "#/$defs/Claims" },
+    "hints": { "$ref": "#/$defs/Hints" }
+  },
+  "required": ["ir_version", "contract_version", "ops", "claims", "hints"],
+  "additionalProperties": false
+}
