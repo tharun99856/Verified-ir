@@ -130,6 +130,30 @@ def test_round_trip_pipeline_with_map():
     assert result == pipeline
 
 
+def test_round_trip_multi_op_pipeline_with_hints():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[
+            Filter(
+                input="users",
+                output="adults",
+                condition=Condition(field="age", cmp=CompareKind.GT, value=Const(value=18)),
+            ),
+            Sort(input="adults", output="sorted", key="score", descending=True),
+            Take(input="sorted", output="top10", count=10),
+        ],
+        claims=Claims(complexity="O(n log n)", stable=True),
+        hints=Hints(suggested_algorithm="partial_sort"),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
+    assert len(result.ops) == 3
+
+
 def test_round_trip_pipeline_with_groupby():
     pipeline = Pipeline(
         ir_version=1,
