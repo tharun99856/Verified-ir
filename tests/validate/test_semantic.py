@@ -71,6 +71,21 @@ def test_input_referencing_a_later_output_is_rejected():
     assert result.stage == "semantic"
 
 
+def test_sort_with_empty_key_is_rejected():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Sort(input="users", output="sorted", key="")],
+        claims=Claims(complexity="O(n log n)", stable=False),
+        hints=Hints(),
+    )
+
+    result = validate_semantic(pipeline)
+
+    assert result.outcome == "rejected"
+    assert result.stage == "semantic"
+
+
 def test_unused_intermediate_output_is_rejected_as_dangling():
     pipeline = Pipeline(
         ir_version=1,

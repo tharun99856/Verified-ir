@@ -1,9 +1,34 @@
 from explain.explanation import Explanation
-from ir.model import Pipeline
+from ir.model import Filter, GroupBy, Map, Pipeline, Reduce, Sort
+
+
+def _field_references(op):
+    if isinstance(op, Sort):
+        return [("key", op.key)]
+    if isinstance(op, GroupBy):
+        return [("key", op.key)]
+    if isinstance(op, Map):
+        return [("assign", op.assign)]
+    if isinstance(op, Filter):
+        return [("condition.field", op.condition.field)]
+    if isinstance(op, Reduce) and op.field is not None:
+        return [("field", op.field)]
+    return []
 
 
 def validate_semantic(pipeline: Pipeline) -> Explanation:
     output_position = {op.output: i for i, op in enumerate(pipeline.ops)}
+
+    for op in pipeline.ops:
+        for field_name, value in _field_references(op):
+            if not value:
+                return Explanation(
+                    stage="semantic",
+                    outcome="rejected",
+                    rule="EMPTY_FIELD_REFERENCE",
+                    evidence=[field_name],
+                    suggestion=f"'{field_name}' must be a non-empty field name",
+                )
 
     for i, op in enumerate(pipeline.ops):
         defined_at = output_position.get(op.input)
