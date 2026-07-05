@@ -38,6 +38,21 @@ def test_well_formed_chained_pipeline_passes_semantic_validation():
     assert result.stage == "semantic"
 
 
+def test_op_referencing_its_own_output_as_input_is_rejected():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Sort(input="same", output="same", key="score")],
+        claims=Claims(complexity="O(n log n)", stable=False),
+        hints=Hints(),
+    )
+
+    result = validate_semantic(pipeline)
+
+    assert result.outcome == "rejected"
+    assert result.stage == "semantic"
+
+
 def test_input_referencing_a_later_output_is_rejected():
     pipeline = Pipeline(
         ir_version=1,
