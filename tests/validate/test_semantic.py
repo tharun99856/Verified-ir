@@ -1,4 +1,15 @@
-from ir.model import Claims, CompareKind, Condition, Const, Filter, Hints, Pipeline, Sort, Take
+from ir.model import (
+    Claims,
+    CompareKind,
+    Condition,
+    Const,
+    Filter,
+    GroupBy,
+    Hints,
+    Pipeline,
+    Sort,
+    Take,
+)
 from validate.semantic import validate_semantic
 
 
@@ -24,4 +35,22 @@ def test_well_formed_chained_pipeline_passes_semantic_validation():
     result = validate_semantic(_chained_pipeline())
 
     assert result.outcome == "ok"
+    assert result.stage == "semantic"
+
+
+def test_input_referencing_a_later_output_is_rejected():
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[
+            GroupBy(input="later", output="grouped", key="k"),
+            Sort(input="raw", output="later", key="score"),
+        ],
+        claims=Claims(complexity="O(n log n)", stable=False),
+        hints=Hints(),
+    )
+
+    result = validate_semantic(pipeline)
+
+    assert result.outcome == "rejected"
     assert result.stage == "semantic"
