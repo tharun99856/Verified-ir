@@ -70,6 +70,13 @@ class ReducerKind(Enum):
 
 
 @dataclass(frozen=True)
+class GroupBy:
+    input: str
+    output: str
+    key: str
+
+
+@dataclass(frozen=True)
 class Reduce:
     input: str
     output: str
