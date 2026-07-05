@@ -47,6 +47,13 @@ class Condition:
 
 
 @dataclass(frozen=True)
+class Filter:
+    input: str
+    output: str
+    condition: Condition
+
+
+@dataclass(frozen=True)
 class Take:
     input: str
     output: str
