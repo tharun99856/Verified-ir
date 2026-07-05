@@ -1,4 +1,6 @@
 from ir.model import (
+    BinOp,
+    BinOpKind,
     Claims,
     CompareKind,
     Condition,
@@ -90,6 +92,24 @@ def test_round_trip_pipeline_with_filter_over_const():
     result = serializer.parse(serializer.emit(pipeline))
 
     assert result == pipeline
+
+
+def test_round_trip_pipeline_with_filter_over_nested_binop():
+    nested_value = BinOp(op=BinOpKind.ADD, left=Const(value=10), right=Const(value=8))
+    cond = Condition(field="age", cmp=CompareKind.GT, value=nested_value)
+    pipeline = Pipeline(
+        ir_version=1,
+        contract_version=1,
+        ops=[Filter(input="users", output="adults", condition=cond)],
+        claims=Claims(complexity="O(n)", stable=False),
+        hints=Hints(),
+    )
+
+    serializer = JsonSerializer()
+    result = serializer.parse(serializer.emit(pipeline))
+
+    assert result == pipeline
+    assert isinstance(result.ops[0].condition.value, BinOp)
 
 
 def test_round_trip_pipeline_with_groupby():
