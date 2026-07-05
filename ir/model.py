@@ -30,6 +30,22 @@ class BinOp:
 Expr = Union[Field, Const, BinOp]
 
 
+class CompareKind(Enum):
+    GT = "gt"
+    LT = "lt"
+    GTE = "gte"
+    LTE = "lte"
+    EQ = "eq"
+    NEQ = "neq"
+
+
+@dataclass(frozen=True)
+class Condition:
+    field: str
+    cmp: CompareKind
+    value: Expr
+
+
 @dataclass(frozen=True)
 class Take:
     input: str
