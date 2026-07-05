@@ -1,6 +1,6 @@
 import json
 
-from ir.model import Claims, Hints, Pipeline, Sort, Take
+from ir.model import Claims, GroupBy, Hints, Pipeline, Sort, Take
 
 
 def _emit_op(op):
@@ -14,6 +14,8 @@ def _emit_op(op):
             "key": op.key,
             "descending": op.descending,
         }
+    if isinstance(op, GroupBy):
+        return {"op": "groupby", "input": op.input, "output": op.output, "key": op.key}
     raise ValueError(f"unknown op type: {type(op)!r}")
 
 
@@ -28,6 +30,8 @@ def _parse_op(data):
             key=data["key"],
             descending=data.get("descending", False),
         )
+    if kind == "groupby":
+        return GroupBy(input=data["input"], output=data["output"], key=data["key"])
     raise ValueError(f"unknown op kind: {kind!r}")
 
 
