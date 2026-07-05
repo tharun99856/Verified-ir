@@ -54,6 +54,14 @@ class Filter:
 
 
 @dataclass(frozen=True)
+class Map:
+    input: str
+    output: str
+    assign: str
+    expr: Expr
+
+
+@dataclass(frozen=True)
 class Take:
     input: str
     output: str
